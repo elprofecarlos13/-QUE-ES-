@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>¿QUÉ ES? by el profe Carlos</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CHROME MOBILE SPECIFIC FULLSCREEN & ZERO-SCROLL LOCK */
+        html {
+            height: 100%;
+            height: -webkit-fill-available;
+            height: 100dvh;
+            width: 100vw;
+            overflow: hidden !important;
+        }
+
+        body {
+            height: 100%;
+            height: -webkit-fill-available;
+            height: 100dvh;
+            max-height: 100dvh;
+            width: 100vw;
+            max-width: 100vw;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            margin: 0;
+            padding: clamp(4px, 1.2vh, 8px);
+            overflow: hidden !important;
+            touch-action: none; /* Prevents Chrome pull-to-refresh & drag */
+            font-family: 'Fredoka', 'Comic Sans MS', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* ANIMATIONS */
+        @keyframes screenShake {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            15% { transform: translate(-6px, 4px) rotate(-1deg); }
+            30% { transform: translate(6px, -4px) rotate(1deg); }
+            45% { transform: translate(-4px, -3px) rotate(-0.5deg); }
+            60% { transform: translate(4px, 3px) rotate(0.5deg); }
+            75% { transform: translate(-2px, 1px) rotate(0deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        .animate-screen-shake {
+            animation: screenShake 0.45s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes keyErrorShake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        .animate-shake {
+            animation: keyErrorShake 0.3s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        /* EMOJI LIVE GIF ANIMATIONS */
+        @keyframes gifBounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-6px) scale(1.05); }
+        }
+
+        @keyframes gifPulse {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.06) rotate(2deg); }
+        }
+
+        @keyframes gifWiggle {
+            0%, 100% { transform: rotate(-4deg) translateY(0); }
+            50% { transform: rotate(4deg) translateY(-3px); }
+        }
+
+        @keyframes gifFloat {
+            0%, 100% { transform: translateY(0) rotate(-2deg); }
+            50% { transform: translateY(-5px) rotate(2deg); }
+        }
+
+        .gif-bounce { animation: gifBounce 1.8s ease-in-out infinite; }
+        .gif-pulse { animation: gifPulse 2s ease-in-out infinite; }
+        .gif-wiggle { animation: gifWiggle 1.4s ease-in-out infinite; }
+        .gif-float { animation: gifFloat 2.5s ease-in-out infinite; }
+
+        @keyframes popIn {
+            0% { transform: scale(0.4); opacity: 0; }
+            70% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .animate-pop {
+            animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* TOUCH-OPTIMIZED BUTTON STYLES */
+        .btn-toy {
+            box-shadow: 0px 3px 0px rgba(0, 0, 0, 0.2);
+            transition: transform 0.05s ease, background-color 0.1s ease, box-shadow 0.05s ease;
+            touch-action: manipulation;
+        }
+
+        .btn-toy:active, .btn-toy.active-press {
+            transform: translateY(2px) !important;
+            box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        .btn-correct {
+            background-color: #22c55e !important;
+            color: #ffffff !important;
+            border-color: #15803d !important;
+        }
+
+        .btn-wrong {
+            background-color: #ef4444 !important;
+            color: #ffffff !important;
+            border-color: #b91c1c !important;
+        }
+
+        .level-tab-active {
+            background-color: #f59e0b !important;
+            color: #ffffff !important;
+            border-color: #b45309 !important;
+            box-shadow: 0px 2px 0px #b45309 !important;
+        }
+
+        /* CHROME MOBILE KEYBOARD SCALING */
+        .key-btn {
+            height: clamp(32px, 5vh, 44px);
+            min-height: 30px;
+            font-size: clamp(0.85rem, 3.5vw, 1.25rem);
+            font-weight: 800;
+            border-radius: 0.5rem;
+            touch-action: manipulation;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* CONFETTI OVERLAY */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 60;
+        }
+    </style>
+</head>
+<body id="app-body" class="bg-gradient-to-b from-sky-200 via-amber-100 to-emerald-200 text-slate-800">
+
+    <!-- Canvas para Confeti -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- ENCABEZADO Y CONTROLES SUPERIORES -->
+    <header class="w-full max-w-md mx-auto bg-white/95 backdrop-blur-md rounded-2xl p-1.5 border-2 border-yellow-400 shadow-sm flex flex-col gap-1 z-10 shrink-0">
+        
+        <!-- Marca y Título -->
+        <div class="flex items-center justify-between px-1">
+            <div class="flex items-center gap-1">
+                <h1 class="text-base sm:text-2xl font-black text-amber-500 tracking-tight flex items-center leading-none">
+                    <span class="text-rose-500">¿</span><span class="text-amber-500">Q</span><span class="text-emerald-500">U</span><span class="text-sky-500">É</span>
+                    <span class="text-indigo-500 ml-0.5">E</span><span class="text-purple-500">S</span><span class="text-rose-500">?</span>
+                </h1>
+                <span class="bg-indigo-600 text-white font-extrabold text-[8px] sm:text-[10px] px-1.5 py-0.5 rounded-full shadow border border-indigo-300 tracking-tight">
+                    by el profe Carlos
+                </span>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="flex items-center gap-1">
+                <button id="btn-difficulty-toggle" onclick="toggleDifficultyMode()" class="bg-amber-100 hover:bg-amber-200 px-1.5 py-0.5 rounded-lg border border-amber-300 text-[10px] sm:text-xs font-black text-amber-900 btn-toy" title="Cambiar Dificultad">
+                    ⚡ <span id="diff-mode-text">FÁCIL</span>
+                </button>
+                <button id="btn-album-open" onclick="openAlbumModal()" class="bg-purple-100 hover:bg-purple-200 p-1 rounded-lg border border-purple-300 text-xs sm:text-sm btn-toy" title="Álbum de Logros">
+                    🖼️
+                </button>
+                <button id="btn-audio-toggle" class="bg-amber-100 hover:bg-amber-200 p-1 rounded-lg border border-amber-300 text-xs sm:text-sm btn-toy" title="Activar/Desactivar Sonido">
+                    🔊
+                </button>
+            </div>
+        </div>
+
+        <!-- Puntuación y Avance de Nivel -->
+        <div class="flex justify-between items-center w-full px-1">
+            <div class="flex items-center bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-lg shadow-tight">
+                <span class="text-xs sm:text-sm mr-1">⭐</span>
+                <span id="score-text" class="text-[10px] sm:text-xs font-black text-amber-900 tracking-wider">0 PTS</span>
+            </div>
+
+            <div class="flex items-center bg-sky-100 border border-sky-300 px-2 py-0.5 rounded-lg shadow-tight">
+                <span class="text-[10px] sm:text-xs font-extrabold text-sky-900 mr-1">NIVEL <span id="current-level-num">1</span>:</span>
+                <span id="level-progress-text" class="text-[10px] sm:text-xs font-black text-sky-700">1/20</span>
+            </div>
+        </div>
+
+        <!-- Pestañas de Niveles -->
+        <div class="grid grid-cols-3 gap-1 w-full">
+            <button id="tab-level-1" onclick="switchLevel(0)" class="level-tab-active btn-toy bg-sky-100 text-sky-950 font-black text-[9px] sm:text-[11px] py-1 px-0.5 rounded-lg border border-sky-300 text-center truncate">
+                🐶 Animales
+            </button>
+            <button id="tab-level-2" onclick="switchLevel(1)" class="btn-toy bg-sky-100 text-sky-950 font-black text-[9px] sm:text-[11px] py-1 px-0.5 rounded-lg border border-sky-300 text-center truncate">
+                👨‍🍳 Trabajos
+            </button>
+            <button id="tab-level-3" onclick="switchLevel(2)" class="btn-toy bg-sky-100 text-sky-950 font-black text-[9px] sm:text-[11px] py-1 px-0.5 rounded-lg border border-sky-300 text-center truncate">
+                🇨🇴 Objetos
+            </button>
+        </div>
+    </header>
+
+    <!-- ZONA CENTRAL DE JUEGO (Imagen + Casillas) -->
+    <main class="w-full max-w-md mx-auto flex-1 flex flex-col items-center justify-center gap-1 my-0.5 z-10 min-h-0 w-full px-0.5">
+        
+        <!-- Tarjeta del Elemento con Animación CSS -->
+        <div class="relative w-full bg-white rounded-2xl border-2 sm:border-3 border-amber-300 shadow-sm p-1 flex flex-col items-center justify-center min-h-0 flex-1 max-h-[22vh]">
+            
+            <span id="item-category-badge" class="absolute top-1 left-2 bg-sky-100 text-sky-800 font-extrabold text-[8px] sm:text-[10px] px-2 py-0.5 rounded-full border border-sky-300 uppercase tracking-wider">
+                Animales
+            </span>
+
+            <button id="btn-hint" onclick="useHint()" class="absolute top-1 right-2 bg-yellow-300 hover:bg-yellow-400 text-amber-950 font-black text-[8px] sm:text-[10px] px-2 py-0.5 rounded-full border border-yellow-500 shadow-tight btn-toy flex items-center gap-0.5">
+                💡 Pista
+            </button>
+
+            <!-- Emoji con animación estilo GIF -->
+            <div id="item-emoji" class="text-5xl sm:text-6xl gif-bounce filter drop-shadow cursor-pointer my-auto select-none" title="¡Toca para escuchar!">
+                🐱
+            </div>
+        </div>
+
+        <!-- Mensaje de Retroalimentación en Error -->
+        <div id="feedback-toast" class="h-3.5 flex items-center justify-center transition-all duration-200 opacity-0 transform scale-90">
+            <div id="toast-badge" class="bg-rose-500 text-white font-black text-[9px] px-2 py-0.5 rounded-full shadow border border-white flex items-center gap-1">
+                <span>¡Sigue intentando! 💪</span>
+            </div>
+        </div>
+
+        <!-- Recuadros de las Letras -->
+        <div id="slots-container" class="flex flex-wrap justify-center items-center gap-1 w-full px-0.5 shrink-0 min-h-[38px]">
+            <!-- Las casillas se renderizan dinámicamente -->
+        </div>
+
+    </main>
+
+    <!-- TECLADO EN PANTALLA (Optimizada para móviles Chrome) -->
+    <footer class="w-full max-w-md mx-auto bg-white/90 backdrop-blur-md rounded-2xl p-1 border-2 border-sky-300 shadow-md z-10 shrink-0">
+        <div id="keyboard-container" class="flex flex-col gap-1 w-full">
+            <!-- 3 Filas del teclado -->
+        </div>
+    </footer>
+
+    <!-- MODAL DE FELICITACIONES / VICTORIA -->
+    <div id="victory-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+        <div class="bg-white rounded-3xl border-4 border-yellow-400 shadow-2xl p-4 max-w-xs w-full text-center flex flex-col items-center gap-2 animate-pop">
+            
+            <div class="bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 text-white font-black text-lg sm:text-2xl px-2 py-1 rounded-2xl shadow border-2 border-white animate-bounce w-full">
+                ¡FELICITACIONES! 🎉
+            </div>
+
+            <p class="text-[9px] sm:text-[10px] font-extrabold text-slate-500 uppercase tracking-widest">
+                Juego creado por el profe Carlos
+            </p>
+
+            <p id="victory-word-text" class="text-base sm:text-xl font-black text-indigo-700 tracking-wider my-0.5">
+                ¡ES UN GATO! 🐱
+            </p>
+
+            <div class="bg-amber-100 border border-amber-300 rounded-xl py-1 px-3 text-amber-900 font-extrabold text-xs sm:text-sm">
+                ⭐ +100 PUNTOS GANADOS ⭐
+            </div>
+
+            <button id="btn-next-item" onclick="nextItem()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white text-base sm:text-lg font-black py-2 px-3 rounded-2xl border-b-4 border-emerald-700 shadow-md btn-toy">
+                ¡SIGUIENTE PALABRA! ➡️
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL DEL ÁLBUM DE LOGROS -->
+    <div id="album-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+        <div class="bg-white rounded-3xl border-4 border-purple-400 shadow-2xl p-3 max-w-xs w-full h-[78vh] flex flex-col gap-1.5 animate-pop">
+            
+            <div class="flex justify-between items-center border-b pb-1.5">
+                <h2 class="text-base font-black text-purple-900 flex items-center gap-1">
+                    🖼️ Mi Álbum de Logros
+                </h2>
+                <button onclick="closeAlbumModal()" class="text-slate-400 hover:text-slate-600 font-black text-lg px-2">
+                    ✖
+                </button>
+            </div>
+
+            <p class="text-[10px] font-extrabold text-purple-600">
+                ¡Descifra las palabras para completar las 60 tarjetas!
+            </p>
+
+            <div id="album-grid" class="flex-1 overflow-y-auto grid grid-cols-4 gap-1.5 p-1 border rounded-xl bg-slate-50">
+                <!-- Tarjetas del álbum -->
+            </div>
+
+            <button onclick="closeAlbumModal()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-black py-1.5 rounded-xl border-b-4 border-purple-800 shadow btn-toy text-xs">
+                ¡VOLVER AL JUEGO! 🎮
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /* BASE DE DATOS DEL JUEGO (60 DESAFÍOS EN 3 NIVELES) */
+        const LEVELS_DATA = [
+            // NIVEL 1: ANIMALES (20 items)
+            {
+                name: "Animales",
+                badge: "🐶 Nivel 1: Animales",
+                items: [
+                    { word: "OSO", emoji: "🐻", anim: "gif-bounce" },
+                    { word: "GATO", emoji: "🐱", anim: "gif-pulse" },
+                    { word: "PATO", emoji: "🦆", anim: "gif-float" },
+                    { word: "LEON", emoji: "🦁", anim: "gif-wiggle" },
+                    { word: "RANA", emoji: "🐸", anim: "gif-bounce" },
+                    { word: "PEZ", emoji: "🐟", anim: "gif-float" },
+                    { word: "PERRO", emoji: "🐶", anim: "gif-pulse" },
+                    { word: "MONO", emoji: "🐒", anim: "gif-bounce" },
+                    { word: "LORO", emoji: "🦜", anim: "gif-float" },
+                    { word: "VACA", emoji: "🐮", anim: "gif-pulse" },
+                    { word: "TIGRE", emoji: "🐯", anim: "gif-wiggle" },
+                    { word: "ZORRO", emoji: "🦊", anim: "gif-bounce" },
+                    { word: "LOBO", emoji: "🐺", anim: "gif-pulse" },
+                    { word: "OVEJA", emoji: "🐑", anim: "gif-float" },
+                    { word: "RATA", emoji: "🐀", anim: "gif-bounce" },
+                    { word: "PUMA", emoji: "🐆", anim: "gif-wiggle" },
+                    { word: "PAVO", emoji: "🦃", anim: "gif-bounce" },
+                    { word: "BUHO", emoji: "🦉", anim: "gif-float" },
+                    { word: "FOCA", emoji: "🦭", anim: "gif-pulse" },
+                    { word: "PANDA", emoji: "🐼", anim: "gif-bounce" }
+                ]
+            },
+            // NIVEL 2: TRABAJOS Y PROFESIONES (20 items)
+            {
+                name: "Trabajos",
+                badge: "👨‍🍳 Nivel 2: Trabajos y Profesiones",
+                items: [
+                    { word: "REY", emoji: "👑", anim: "gif-pulse" },
+                    { word: "CHEF", emoji: "👨‍🍳", anim: "gif-bounce" },
+                    { word: "JUEZ", emoji: "👨‍⚖️", anim: "gif-pulse" },
+                    { word: "MAGO", emoji: "🧙‍♂️", anim: "gif-float" },
+                    { word: "POETA", emoji: "✍️", anim: "gif-pulse" },
+                    { word: "PILOTO", emoji: "🧑‍✈️", anim: "gif-float" },
+                    { word: "MEDICO", emoji: "👩‍⚕️", anim: "gif-bounce" },
+                    { word: "PINTOR", emoji: "🎨", anim: "gif-wiggle" },
+                    { word: "MINERO", emoji: "⛏️", anim: "gif-bounce" },
+                    { word: "DOCTOR", emoji: "👨‍⚕️", anim: "gif-pulse" },
+                    { word: "POLICIA", emoji: "👮‍♂️", anim: "gif-bounce" },
+                    { word: "BOMBERO", emoji: "🧑‍🚒", anim: "gif-pulse" },
+                    { word: "MAESTRO", emoji: "🧑‍🏫", anim: "gif-float" },
+                    { word: "HEROE", emoji: "🦸‍♂️", anim: "gif-bounce" },
+                    { word: "ATLETA", emoji: "🏃‍♂️", anim: "gif-bounce" },
+                    { word: "MARINO", emoji: "⚓", anim: "gif-pulse" },
+                    { word: "ACTOR", emoji: "🎭", anim: "gif-float" },
+                    { word: "DENTISTA", emoji: "🦷", anim: "gif-pulse" },
+                    { word: "CHOFER", emoji: "🚘", anim: "gif-bounce" },
+                    { word: "MONJA", emoji: "👵", anim: "gif-pulse" }
+                ]
+            },
+            // NIVEL 3: OBJETOS Y BANDERAS (20 items)
+            {
+                name: "Objetos y Banderas",
+                badge: "🇨🇴 Nivel 3: Objetos y Banderas",
+                items: [
+                    { word: "COLOMBIA", emoji: "🇨🇴", anim: "gif-float" },
+                    { word: "PERU", emoji: "🇵🇪", anim: "gif-float" },
+                    { word: "MEXICO", emoji: "🇲🇽", anim: "gif-float" },
+                    { word: "ESPAÑA", emoji: "🇪🇸", anim: "gif-float" },
+                    { word: "ALEMANIA", emoji: "🇩🇪", anim: "gif-float" },
+                    { word: "CHILE", emoji: "🇨🇱", anim: "gif-float" },
+                    { word: "SOL", emoji: "☀️", anim: "gif-pulse" },
+                    { word: "LUNA", emoji: "🌙", anim: "gif-float" },
+                    { word: "CASA", emoji: "🏠", anim: "gif-bounce" },
+                    { word: "FLOR", emoji: "🌸", anim: "gif-pulse" },
+                    { word: "AUTO", emoji: "🚗", anim: "gif-bounce" },
+                    { word: "TREN", emoji: "🚂", anim: "gif-bounce" },
+                    { word: "MESA", emoji: "🪑", anim: "gif-pulse" },
+                    { word: "SILLA", emoji: "🪑", anim: "gif-pulse" },
+                    { word: "RELOJ", emoji: "⏰", anim: "gif-wiggle" },
+                    { word: "LAPIZ", emoji: "✏️", anim: "gif-bounce" },
+                    { word: "PELOTA", emoji: "⚽", anim: "gif-bounce" },
+                    { word: "ZAPATO", emoji: "👞", anim: "gif-bounce" },
+                    { word: "VASO", emoji: "🥛", anim: "gif-pulse" },
+                    { word: "PAN", emoji: "🍞", anim: "gif-bounce" }
+                ]
+            }
+        ];
+
+        // Filas del teclado
+        const KEYBOARD_ROWS = [
+            ["A", "B", "C", "D", "E", "F", "G", "H", "I"],
+            ["J", "K", "L", "M", "N", "Ñ", "O", "P", "Q"],
+            ["R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+        ];
+
+        // Estado del juego
+        let currentLevelIndex = 0;
+        let currentItemIndex = 0;
+        let currentTypedIndex = 0;
+        let score = 0;
+        let soundEnabled = true;
+        let isWordCompleted = false;
+        let isEasyMode = true;
+        let unlockedItemsSet = new Set();
+
+        // Elementos DOM
+        const appBody = document.getElementById('app-body');
+        const emojiEl = document.getElementById('item-emoji');
+        const badgeEl = document.getElementById('item-category-badge');
+        const slotsContainer = document.getElementById('slots-container');
+        const keyboardContainer = document.getElementById('keyboard-container');
+        const currentLevelNum = document.getElementById('current-level-num');
+        const levelProgressText = document.getElementById('level-progress-text');
+        const scoreText = document.getElementById('score-text');
+        const toastEl = document.getElementById('feedback-toast');
+        const toastBadge = document.getElementById('toast-badge');
+        const victoryModal = document.getElementById('victory-modal');
+        const victoryWordText = document.getElementById('victory-word-text');
+        const albumModal = document.getElementById('album-modal');
+        const albumGrid = document.getElementById('album-grid');
+        const btnAudioToggle = document.getElementById('btn-audio-toggle');
+        const diffModeText = document.getElementById('diff-mode-text');
+
+        /* SINTETIZADOR WEB AUDIO API */
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                const ctx = getAudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                const now = ctx.currentTime;
+
+                if (type === 'tap') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(160, now);
+                    osc.frequency.linearRampToValueAtTime(80, now + 0.22);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
+                    osc.start(now);
+                    osc.stop(now + 0.22);
+                } else if (type === 'victory') {
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, idx) => {
+                        const noteOsc = ctx.createOscillator();
+                        const noteGain = ctx.createGain();
+                        noteOsc.connect(noteGain);
+                        noteGain.connect(ctx.destination);
+                        
+                        noteOsc.type = 'triangle';
+                        noteOsc.frequency.setValueAtTime(freq, now + idx * 0.1);
+                        noteGain.gain.setValueAtTime(0.25, now + idx * 0.1);
+                        noteGain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.35);
+                        
+                        noteOsc.start(now + idx * 0.1);
+                        noteOsc.stop(now + idx * 0.1 + 0.35);
+                    });
+                }
+            } catch (err) {
+                console.log("Audio exception:", err);
+            }
+        }
+
+        /* LOCUCIÓN DE VOZ EN ESPAÑOL */
+        function speakText(text) {
+            if (!soundEnabled || !('speechSynthesis' in window)) return;
+            try {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'es-ES';
+                utterance.rate = 0.95;
+                utterance.pitch = 1.1;
+                window.speechSynthesis.speak(utterance);
+            } catch (e) {
+                console.log("Speech error:", e);
+            }
+        }
+
+        /* DIBUJAR TECLADO OPTIMIZADO PARA MÓVILES */
+        function createKeyboard() {
+            keyboardContainer.innerHTML = '';
+            const currentItem = LEVELS_DATA[currentLevelIndex].items[currentItemIndex];
+            const wordLetters = new Set(currentItem.word.split(''));
+
+            KEYBOARD_ROWS.forEach(rowKeys => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'flex justify-center items-center gap-1 w-full';
+
+                rowKeys.forEach(letter => {
+                    const btn = document.createElement('button');
+                    btn.id = `key-${letter}`;
+                    btn.className = 'key-btn flex-1 btn-toy bg-sky-100 hover:bg-sky-200 active:bg-amber-300 text-sky-950 border border-sky-300 font-extrabold flex items-center justify-center transition-all';
+                    btn.textContent = letter;
+
+                    if (isEasyMode && !wordLetters.has(letter)) {
+                        btn.classList.add('opacity-40', 'scale-95');
+                    }
+                    
+                    btn.addEventListener('pointerdown', (e) => {
+                        e.preventDefault();
+                        handleKeyPress(letter);
+                    });
+
+                    rowDiv.appendChild(btn);
+                });
+
+                keyboardContainer.appendChild(rowDiv);
+            });
+        }
+
+        /* CARGAR DESAFÍO ACTUAL */
+        function loadCurrentItem() {
+            isWordCompleted = false;
+            currentTypedIndex = 0;
+
+            const levelData = LEVELS_DATA[currentLevelIndex];
+            const currentItem = levelData.items[currentItemIndex];
+
+            currentLevelNum.textContent = currentLevelIndex + 1;
+            levelProgressText.textContent = `${currentItemIndex + 1}/${levelData.items.length}`;
+            badgeEl.textContent = levelData.badge;
+
+            emojiEl.textContent = currentItem.emoji;
+            emojiEl.className = `text-5xl sm:text-6xl filter drop-shadow cursor-pointer my-auto ${currentItem.anim}`;
+
+            const wordLen = currentItem.word.length;
+            const slotWidthClass = wordLen > 6 ? 'w-6 h-8 sm:w-9 sm:h-11 text-sm sm:text-lg' : 'w-7 h-9 sm:w-10 sm:h-12 text-base sm:text-xl';
+
+            slotsContainer.innerHTML = '';
+            for (let i = 0; i < wordLen; i++) {
+                const slot = document.createElement('div');
+                slot.id = `slot-${i}`;
+                slot.className = `letter-slot ${slotWidthClass} bg-amber-50 border-2 border-dashed border-amber-300 rounded-xl flex items-center justify-center font-black text-amber-900 transition-all`;
+                slotsContainer.appendChild(slot);
+            }
+
+            victoryModal.classList.add('hidden');
+            createKeyboard();
+            speakText(currentItem.word);
+        }
+
+        /* PISTA */
+        function useHint() {
+            if (isWordCompleted) return;
+
+            const currentItem = LEVELS_DATA[currentLevelIndex].items[currentItemIndex];
+            const targetLetter = currentItem.word[currentTypedIndex];
+
+            if (targetLetter) {
+                playSound('tap');
+                handleKeyPress(targetLetter);
+            }
+        }
+
+        /* CAMBIAR DIFICULTAD */
+        function toggleDifficultyMode() {
+            isEasyMode = !isEasyMode;
+            diffModeText.textContent = isEasyMode ? 'FÁCIL' : 'NORMAL';
+            createKeyboard();
+            playSound('tap');
+        }
+
+        /* VALIDAR PULSACIÓN DE TECLA */
+        function handleKeyPress(letter) {
+            if (isWordCompleted) return;
+
+            const currentItem = LEVELS_DATA[currentLevelIndex].items[currentItemIndex];
+            const targetLetter = currentItem.word[currentTypedIndex];
+            const keyBtn = document.getElementById(`key-${letter}`);
+
+            if (letter === targetLetter) {
+                playSound('correct');
+                speakText(letter);
+
+                const slot = document.getElementById(`slot-${currentTypedIndex}`);
+                if (slot) {
+                    slot.textContent = letter;
+                    slot.classList.remove('border-dashed', 'bg-amber-50');
+                    slot.classList.add('bg-emerald-500', 'border-emerald-700', 'text-white', 'shadow', 'animate-pop');
+                }
+
+                if (keyBtn) {
+                    keyBtn.classList.add('btn-correct');
+                    setTimeout(() => keyBtn.classList.remove('btn-correct'), 200);
+                }
+
+                currentTypedIndex++;
+
+                if (currentTypedIndex === currentItem.word.length) {
+                    completeWord();
+                }
+
+            } else {
+                playSound('wrong');
+
+                if (navigator.vibrate) {
+                    navigator.vibrate(100);
+                }
+
+                if (keyBtn) {
+                    keyBtn.classList.add('btn-wrong', 'animate-shake');
+                    setTimeout(() => {
+                        keyBtn.classList.remove('btn-wrong', 'animate-shake');
+                    }, 320);
+                }
+
+                showToast("¡Sigue intentando! 💪");
+            }
+        }
+
+        let toastTimeout = null;
+        function showToast(message) {
+            clearTimeout(toastTimeout);
+            toastBadge.textContent = message;
+            toastBadge.className = 'bg-rose-500 text-white font-black text-[9px] px-2 py-0.5 rounded-full shadow border border-white flex items-center gap-1 animate-shake';
+
+            toastEl.classList.remove('opacity-0', 'scale-90');
+            toastEl.classList.add('opacity-100', 'scale-100');
+
+            toastTimeout = setTimeout(() => {
+                toastEl.classList.remove('opacity-100', 'scale-100');
+                toastEl.classList.add('opacity-0', 'scale-90');
+            }, 1100);
+        }
+
+        /* COMPLETAR PALABRA Y CELEBRACIÓN */
+        function completeWord() {
+            isWordCompleted = true;
+            score += 100;
+            scoreText.textContent = `${score} PTS`;
+
+            const currentItem = LEVELS_DATA[currentLevelIndex].items[currentItemIndex];
+            unlockedItemsSet.add(`${currentLevelIndex}-${currentItemIndex}`);
+
+            playSound('victory');
+            startConfetti();
+
+            appBody.classList.add('animate-screen-shake');
+            setTimeout(() => {
+                appBody.classList.remove('animate-screen-shake');
+            }, 450);
+
+            setTimeout(() => {
+                speakText(`¡Felicitaciones! ¡Muy bien, es ${currentItem.word}!`);
+            }, 180);
+
+            setTimeout(() => {
+                victoryWordText.textContent = `¡ES ${currentItem.word}! ${currentItem.emoji}`;
+                victoryModal.classList.remove('hidden');
+            }, 750);
+        }
+
+        function nextItem() {
+            stopConfetti();
+            const levelData = LEVELS_DATA[currentLevelIndex];
+            currentItemIndex = (currentItemIndex + 1) % levelData.items.length;
+            loadCurrentItem();
+        }
+
+        function switchLevel(levelIdx) {
+            currentLevelIndex = levelIdx;
+            currentItemIndex = 0;
+
+            for (let i = 0; i < 3; i++) {
+                const tabBtn = document.getElementById(`tab-level-${i + 1}`);
+                if (i === levelIdx) {
+                    tabBtn.classList.add('level-tab-active');
+                } else {
+                    tabBtn.classList.remove('level-tab-active');
+                }
+            }
+
+            stopConfetti();
+            loadCurrentItem();
+        }
+
+        /* MODAL DEL ÁLBUM */
+        function openAlbumModal() {
+            albumGrid.innerHTML = '';
+            LEVELS_DATA.forEach((lvl, lIdx) => {
+                lvl.items.forEach((item, iIdx) => {
+                    const isUnlocked = unlockedItemsSet.has(`${lIdx}-${iIdx}`);
+                    const card = document.createElement('div');
+                    card.className = `p-1 rounded-xl flex flex-col items-center justify-center border text-center ${isUnlocked ? 'bg-amber-100 border-amber-300' : 'bg-slate-200 border-slate-300 opacity-40'}`;
+                    card.innerHTML = `
+                        <span class="text-lg">${isUnlocked ? item.emoji : '❓'}</span>
+                        <span class="text-[8px] font-black mt-0.5 text-slate-800 truncate w-full">${isUnlocked ? item.word : '???'}</span>
+                    `;
+                    albumGrid.appendChild(card);
+                });
+            });
+            albumModal.classList.remove('hidden');
+            playSound('tap');
+        }
+
+        function closeAlbumModal() {
+            albumModal.classList.add('hidden');
+            playSound('tap');
+        }
+
+        /* EFECTO CONFETI CON CANVAS */
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        let confettiParticles = [];
+        let confettiAnimationId = null;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function startConfetti() {
+            confettiParticles = [];
+            const colors = ['#f43f5e', '#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#facc15'];
+            for (let i = 0; i < 70; i++) {
+                confettiParticles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    size: Math.random() * 7 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    speedY: Math.random() * 3.5 + 2,
+                    speedX: Math.random() * 2 - 1,
+                    angle: Math.random() * 360,
+                    spin: Math.random() * 0.2 - 0.1
+                });
+            }
+            if (!confettiAnimationId) {
+                animateConfetti();
+            }
+        }
+
+        function animateConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let active = false;
+
+            confettiParticles.forEach(p => {
+                p.y += p.speedY;
+                p.x += p.speedX;
+                p.angle += p.spin;
+
+                if (p.y < canvas.height) {
+                    active = true;
+                }
+
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.angle);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                ctx.restore();
+            });
+
+            if (active) {
+                confettiAnimationId = requestAnimationFrame(animateConfetti);
+            } else {
+                stopConfetti();
+            }
+        }
+
+        function stopConfetti() {
+            if (confettiAnimationId) {
+                cancelAnimationFrame(confettiAnimationId);
+                confettiAnimationId = null;
+            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        /* EVENTOS TECLADO FÍSICO Y AUDIOS */
+        window.addEventListener('keydown', (e) => {
+            const key = e.key.toUpperCase();
+            if (KEYBOARD_ROWS.flat().includes(key)) {
+                handleKeyPress(key);
+            } else if (e.key === 'Enter' && !victoryModal.classList.contains('hidden')) {
+                nextItem();
+            }
+        });
+
+        emojiEl.addEventListener('click', () => {
+            const currentItem = LEVELS_DATA[currentLevelIndex].items[currentItemIndex];
+            speakText(currentItem.word);
+            emojiEl.classList.add('animate-pop');
+            setTimeout(() => emojiEl.classList.remove('animate-pop'), 250);
+        });
+
+        btnAudioToggle.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            btnAudioToggle.textContent = soundEnabled ? '🔊' : '🔇';
+            btnAudioToggle.classList.toggle('bg-rose-200', !soundEnabled);
+        });
+
+        window.onload = () => {
+            loadCurrentItem();
+        };
+    </script>
+</body>
+</html>
